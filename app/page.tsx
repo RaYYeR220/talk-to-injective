@@ -10,6 +10,9 @@ import type { WalletProvider } from '@/lib/wallet';
 const DEMO_ADDRESS = 'inj1p4qgrapyuxrurm0jyux9s2q8fn4ghsxwy24mt3';
 
 const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
+// Render-only: shorten any inj1 address in displayed text. The model still receives
+// the full address (we only transform what's shown), so wallet lookups keep working.
+const shortenAddrs = (t: string) => t.replace(/inj1[0-9a-z]{38,}/g, short);
 const WALLET_LABEL: Record<WalletProvider, string> = { keplr: 'Keplr', leap: 'Leap' };
 
 interface Suggestion {
@@ -118,7 +121,12 @@ export default function Home() {
               </span>
             )
           ) : (
-            <button className="connect" onClick={onConnectClick} disabled={connecting}>
+            <button
+              className="connect"
+              onClick={onConnectClick}
+              disabled={connecting}
+              title="Optional: connect a wallet to check your own balances. Read-only — I never move funds."
+            >
               {connecting ? 'Connecting…' : 'Connect'}
             </button>
           )}
@@ -141,7 +149,7 @@ export default function Home() {
                 {m.role === 'assistant' && usedTool(m) && !textOf(m) && (
                   <span className="reading">reading chain…</span>
                 )}
-                {textOf(m)}
+                {shortenAddrs(textOf(m))}
               </div>
             ))}
 
