@@ -67,10 +67,16 @@ A backend tool (like `getMarketSnapshot` / `getPortfolio`), registered in `tools
 - `ChainGrpcDistributionApi.fetchDelegatorRewardsNoThrow(address)` — wallet pending rewards.
 
 **APR formula (estimate):**
-`aprFraction = (annualProvisions / bondedTokens) * (1 - communityTax)`
-Both `annualProvisions` and `bondedTokens` are INJ base units (18 decimals), so the ratio is
-unit-free — no decimal scaling, fewer bugs. Rendered with `formatPercent`, and **always
-described to the user as an estimate**. Token amounts use the existing `formatTokenAmount`.
+`aprFraction = (annualProvisionsInj / bondedTokensInj) * (1 - communityTax)`
+Verified against live mainnet, this SDK version scales these fields **inconsistently**, so each
+must be normalized before use:
+- `annualProvisions` → **base units** (≈4.84e24) → divide by 10^18 (`formatTokenAmount`) to get INJ.
+- `pool.bondedTokens` → **already human INJ** (≈57.7M, a decimal string) → use as-is, no division.
+- `delegation.balance.amount` and reward coin `amount` → **base units** → `formatTokenAmount(_, 18)`.
+- `communityTax` → plain decimal fraction (e.g. `0.05`).
+
+Rendered with `formatPercent(_, 3)` (so it reads like `"12.4%"`), and **always described to the
+user as an estimate**.
 
 **Return shape:**
 ```ts
