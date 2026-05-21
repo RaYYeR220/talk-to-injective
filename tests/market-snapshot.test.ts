@@ -7,6 +7,8 @@ describe('getMarketSnapshotData (mainnet, read-only)', () => {
     expect(snap.found).toBe(true);
     expect(snap.ticker.toUpperCase()).toContain('INJ');
     expect(snap.markPrice).toBeGreaterThan(0);
+    // Guard against an unscaled chain integer: a real INJ price is well under $100k.
+    expect(snap.markPrice).toBeLessThan(100000);
   });
 
   it('reports not-found for a nonsense market', async () => {

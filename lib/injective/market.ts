@@ -44,17 +44,19 @@ export async function getMarketSnapshotData(query: string): Promise<MarketSnapsh
     };
   }
 
-  // markPrice and openInterest are NOT on the market object returned by fetchMarkets().
-  // markPrice comes from the first entry in fetchPositions(); it is a raw scaled integer
-  // (price in quote-token base units, e.g. microUSDT) that is > 0 as long as the market
-  // is active — sufficient for the snapshot contract.
-  // openInterest is not exposed by this SDK version; we return null per the interface.
+  // markPrice / openInterest are not on the fetchMarkets() object in this SDK version.
+  // The mark price comes from fetchPositions(); it is a chain-scaled value that must be
+  // divided by 10^quoteDecimals to become a human USD price. openInterest is not exposed
+  // by this SDK version, so it stays null per the interface.
+  const quoteDecimals = Number(
+    (market as any).quoteToken?.decimals ?? (market as any).quoteDecimals ?? 6,
+  );
   let markPrice = 0;
-  let openInterest: number | null = null;
+  const openInterest: number | null = null;
   try {
     const pos = await indexerDerivativesApi.fetchPositions({ marketId: market.marketId });
-    const first = (pos as any).positions?.[0];
-    if (first?.markPrice != null) markPrice = Number(first.markPrice);
+    const raw = (pos as any).positions?.[0]?.markPrice;
+    if (raw != null) markPrice = Number(raw) / 10 ** quoteDecimals;
   } catch {
     markPrice = 0;
   }
