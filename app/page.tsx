@@ -1,66 +1,101 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
+
+import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport } from 'ai';
+import { useState } from 'react';
+
+// A real, funded mainnet address (has an open INJ/USDT PERP position) for the demo chip.
+const DEMO_ADDRESS = 'inj1qy4f2h24jcmlkwvwxvjglxsaeql5ulqdc8exf9';
+const SUGGESTIONS = [
+  `What's in ${DEMO_ADDRESS}?`,
+  "How's the INJ perp?",
+  'What governance proposals are live?',
+];
 
 export default function Home() {
+  const [input, setInput] = useState('');
+  const { messages, sendMessage, status } = useChat({
+    transport: new DefaultChatTransport({ api: '/api/chat' }),
+  });
+
+  const busy = status === 'submitted' || status === 'streaming';
+
+  const send = (text: string) => {
+    const t = text.trim();
+    if (!t || busy) return;
+    sendMessage({ text: t });
+    setInput('');
+  };
+
+  const textOf = (m: (typeof messages)[number]) =>
+    m.parts
+      .filter((p) => p.type === 'text')
+      .map((p) => (p as { text: string }).text)
+      .join('');
+  const usedTool = (m: (typeof messages)[number]) =>
+    m.parts.some((p) => p.type.startsWith('tool-') || p.type === 'dynamic-tool');
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="term">
+      <div className="chrome">
+        <span className="tl">
+          <i />
+          <i />
+          <i />
+        </span>
+        <span className="title">talk-to-injective</span>
+        <span className="net">● mainnet</span>
+      </div>
+
+      <div className="scroll">
+        {messages.length === 0 && (
+          <p className="welcome">
+            Hey 👋 I read live Injective data for you. Ask me about any{' '}
+            <b>wallet</b>, <b>market</b>, or <b>governance proposal</b> — I&apos;ll
+            explain it in plain English. I never trade, just read.
           </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+        )}
+
+        {messages.map((m) => (
+          <div key={m.id} className={`line ${m.role === 'user' ? 'u' : 'b'}`}>
+            {m.role === 'assistant' && usedTool(m) && !textOf(m) && (
+              <span className="reading">reading chain…</span>
+            )}
+            {textOf(m)}
+          </div>
+        ))}
+
+        {busy && messages[messages.length - 1]?.role === 'user' && (
+          <div className="line b reading">reading chain…</div>
+        )}
+      </div>
+
+      <div className="chips">
+        {SUGGESTIONS.map((s) => (
+          <button key={s} className="chip" onClick={() => send(s)} disabled={busy}>
+            › {s}
+          </button>
+        ))}
+      </div>
+
+      <form
+        className="promptbar"
+        onSubmit={(e) => {
+          e.preventDefault();
+          send(input);
+        }}
+      >
+        <span className="ps">›</span>
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Ask anything about Injective…"
+          autoFocus
+        />
+        <button type="submit" className="send" disabled={busy}>
+          Send
+        </button>
+      </form>
+    </main>
   );
 }
