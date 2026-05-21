@@ -4,8 +4,8 @@ import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import { useState } from 'react';
 
-// A real, funded mainnet address (has an open INJ/USDT PERP position) for the demo chip.
-const DEMO_ADDRESS = 'inj1qy4f2h24jcmlkwvwxvjglxsaeql5ulqdc8exf9';
+// A real, funded mainnet address (holds INJ + USDT and an open position) for the demo chip.
+const DEMO_ADDRESS = 'inj1p4qgrapyuxrurm0jyux9s2q8fn4ghsxwy24mt3';
 const SUGGESTIONS = [
   `What's in ${DEMO_ADDRESS}?`,
   "How's the INJ perp?",

@@ -24,7 +24,9 @@ export function formatTokenAmount(rawAmount: string, decimals: number): number {
   return Number(rawAmount) / 10 ** decimals;
 }
 
-export function formatPercent(fraction: number, maxFractionDigits = 3): string {
+export function formatPercent(fraction: number, sigFigs = 2): string {
   const pct = fraction * 100;
-  return `${Number(pct.toFixed(maxFractionDigits))}%`;
+  if (pct === 0) return '0%';
+  // Significant figures, so tiny funding rates (e.g. 0.0004%) don't collapse to "0%".
+  return `${Number(pct.toPrecision(sigFigs))}%`;
 }
