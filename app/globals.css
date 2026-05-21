@@ -50,7 +50,17 @@ body {
   line-height: 1.55;
   margin: 0;
 }
-.welcome b { color: #eaf2ff; }
+.hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px 16px;
+}
+.hero .welcome { text-align: center; max-width: 560px; }
+.hero .chips { justify-content: center; padding: 0; }
 
 .line { white-space: pre-wrap; word-break: break-word; }
 .line.u { color: #6fe3ff; }

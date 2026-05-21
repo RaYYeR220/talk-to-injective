@@ -69,6 +69,16 @@ export default function Home() {
   const usedTool = (m: (typeof messages)[number]) =>
     m.parts.some((p) => p.type.startsWith('tool-') || p.type === 'dynamic-tool');
 
+  const chipRow = (
+    <div className="chips">
+      {suggestions(address).map((s) => (
+        <button key={s.label} className="chip" onClick={() => send(s.text)} disabled={busy}>
+          › {s.label}
+        </button>
+      ))}
+    </div>
+  );
+
   return (
     <main className="term">
       <div className="chrome">
@@ -115,38 +125,36 @@ export default function Home() {
         </span>
       </div>
 
-      <div className="scroll">
-        {messages.length === 0 && (
+      {messages.length === 0 ? (
+        <div className="hero">
           <p className="welcome">
-            Hey 👋 I read live Injective data for you. Ask me about any{' '}
-            <b>wallet</b>, <b>market</b>, or <b>governance proposal</b> — I&apos;ll
-            explain it in plain English. I never trade, just read.
+            Hey 👋 I read live Injective data and explain it in plain English — I never
+            trade, just read. Try a prompt below, or ask me anything.
           </p>
-        )}
+          {chipRow}
+        </div>
+      ) : (
+        <>
+          <div className="scroll">
+            {messages.map((m) => (
+              <div key={m.id} className={`line ${m.role === 'user' ? 'u' : 'b'}`}>
+                {m.role === 'assistant' && usedTool(m) && !textOf(m) && (
+                  <span className="reading">reading chain…</span>
+                )}
+                {textOf(m)}
+              </div>
+            ))}
 
-        {messages.map((m) => (
-          <div key={m.id} className={`line ${m.role === 'user' ? 'u' : 'b'}`}>
-            {m.role === 'assistant' && usedTool(m) && !textOf(m) && (
-              <span className="reading">reading chain…</span>
+            {busy && messages[messages.length - 1]?.role === 'user' && (
+              <div className="line b reading">reading chain…</div>
             )}
-            {textOf(m)}
           </div>
-        ))}
 
-        {busy && messages[messages.length - 1]?.role === 'user' && (
-          <div className="line b reading">reading chain…</div>
-        )}
-      </div>
+          {chipRow}
+        </>
+      )}
 
       {error && <div className="walleterr">{error}</div>}
-
-      <div className="chips">
-        {suggestions(address).map((s) => (
-          <button key={s.label} className="chip" onClick={() => send(s.text)} disabled={busy}>
-            › {s.label}
-          </button>
-        ))}
-      </div>
 
       <form
         className="promptbar"
