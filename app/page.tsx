@@ -18,18 +18,16 @@ interface Suggestion {
 }
 
 function suggestions(address: string | null): Suggestion[] {
-  if (address) {
-    return [
-      { label: "What's in my wallet?", text: `What's in ${address}?` },
-      { label: 'My open positions', text: `Show the open derivative positions for ${address}` },
-      { label: "How's the INJ perp?", text: "How's the INJ perp?" },
-      { label: 'What governance proposals are live?', text: 'What governance proposals are live?' },
-    ];
-  }
+  const walletChip: Suggestion = address
+    ? { label: "What's in my wallet?", text: `What's in ${address}?` }
+    : { label: 'Peek inside a sample wallet', text: `What's in ${DEMO_ADDRESS}?` };
   return [
-    { label: `What's in ${short(DEMO_ADDRESS)}?`, text: `What's in ${DEMO_ADDRESS}?` },
-    { label: "How's the INJ perp?", text: "How's the INJ perp?" },
-    { label: 'What governance proposals are live?', text: 'What governance proposals are live?' },
+    {
+      label: 'New here? What is Injective & what can you do?',
+      text: 'What is Injective, and what can you do?',
+    },
+    walletChip,
+    { label: "How's INJ doing?", text: "How's INJ doing?" },
   ];
 }
 
@@ -81,7 +79,6 @@ export default function Home() {
         </span>
         <span className="title">talk-to-injective</span>
         <span className="right">
-          <span className="net">● mainnet</span>
           {address ? (
             <span className="wallet">
               {short(address)}
