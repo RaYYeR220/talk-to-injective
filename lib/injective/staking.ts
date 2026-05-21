@@ -50,33 +50,40 @@ export async function getStakingData(address?: string): Promise<StakingResult> {
   }
 
   const info: StakingInfo = {
+    // 3 significant figures, so an APR reads like "12.4%" / "8.27%" rather than "12%".
     aprPercent: formatPercent(aprFraction, 3),
     totalBondedInj,
   };
 
   if (address != null) {
-    // NoThrow variants return empty (not throw) when the wallet has no stake/rewards.
-    const [delRes, validatorRewards] = await Promise.all([
-      chainStakingApi.fetchDelegationsNoThrow({ injectiveAddress: address }),
-      chainDistributionApi.fetchDelegatorRewardsNoThrow(address),
-    ]);
+    // Wallet phase has its own boundary: the NoThrow variants return empty (not throw)
+    // for "nothing staked", but a transport error could still reject — keep the
+    // StakingResult contract intact rather than letting it escape as an unhandled throw.
+    try {
+      const [delRes, validatorRewards] = await Promise.all([
+        chainStakingApi.fetchDelegationsNoThrow({ injectiveAddress: address }),
+        chainDistributionApi.fetchDelegatorRewardsNoThrow(address),
+      ]);
 
-    const delegations = delRes.delegations ?? [];
-    const totalStakedInj = delegations.reduce(
-      (sum, d) => sum + formatTokenAmount(d.balance.amount, INJ_DECIMALS),
-      0,
-    );
-    // fetchDelegatorRewardsNoThrow returns one entry per validator; sum the INJ coin across all.
-    const pendingRewardsInj = validatorRewards.reduce((sum, vr) => {
-      const inj = (vr.rewards ?? []).find((c) => c.denom === 'inj');
-      return sum + (inj ? formatTokenAmount(inj.amount, INJ_DECIMALS) : 0);
-    }, 0);
+      const delegations = delRes.delegations ?? [];
+      const totalStakedInj = delegations.reduce(
+        (sum, d) => sum + formatTokenAmount(d.balance?.amount ?? '0', INJ_DECIMALS),
+        0,
+      );
+      // fetchDelegatorRewardsNoThrow returns one entry per validator; sum the INJ coin across all.
+      const pendingRewardsInj = validatorRewards.reduce((sum, vr) => {
+        const inj = (vr.rewards ?? []).find((c) => c.denom === 'inj');
+        return sum + (inj ? formatTokenAmount(inj.amount, INJ_DECIMALS) : 0);
+      }, 0);
 
-    info.wallet = {
-      totalStakedInj,
-      validatorCount: delegations.length,
-      pendingRewardsInj,
-    };
+      info.wallet = {
+        totalStakedInj,
+        validatorCount: delegations.length,
+        pendingRewardsInj,
+      };
+    } catch {
+      return { error: "Couldn't read this wallet's staking data right now — try again in a moment." };
+    }
   }
 
   return info;
