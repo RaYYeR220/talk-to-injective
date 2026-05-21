@@ -13,4 +13,13 @@ describe('SYSTEM_PROMPT capability tour', () => {
   it('states it is read-only / never trades', () => {
     expect(SYSTEM_PROMPT.toLowerCase()).toMatch(/never trade|read-only|read only|only read/);
   });
+
+  it('carries the two official Injective links (so they can be offered without guessing URLs)', () => {
+    expect(SYSTEM_PROMPT).toContain('hub.injective.network');
+    expect(SYSTEM_PROMPT).toContain('helixapp.com');
+  });
+
+  it('does not tell the model to label terms as "jargon"', () => {
+    expect(SYSTEM_PROMPT.toLowerCase()).not.toContain('jargon');
+  });
 });
