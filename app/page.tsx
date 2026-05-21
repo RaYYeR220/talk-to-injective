@@ -3,17 +3,40 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import { useState } from 'react';
+import { useWallet } from '@/lib/useWallet';
+import type { WalletProvider } from '@/lib/wallet';
 
 // A real, funded mainnet address (holds INJ + USDT and an open position) for the demo chip.
 const DEMO_ADDRESS = 'inj1p4qgrapyuxrurm0jyux9s2q8fn4ghsxwy24mt3';
-const SUGGESTIONS = [
-  `What's in ${DEMO_ADDRESS}?`,
-  "How's the INJ perp?",
-  'What governance proposals are live?',
-];
+
+const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
+const WALLET_LABEL: Record<WalletProvider, string> = { keplr: 'Keplr', leap: 'Leap' };
+
+interface Suggestion {
+  label: string;
+  text: string;
+}
+
+function suggestions(address: string | null): Suggestion[] {
+  if (address) {
+    return [
+      { label: "What's in my wallet?", text: `What's in ${address}?` },
+      { label: 'My open positions', text: `Show the open derivative positions for ${address}` },
+      { label: "How's the INJ perp?", text: "How's the INJ perp?" },
+      { label: 'What governance proposals are live?', text: 'What governance proposals are live?' },
+    ];
+  }
+  return [
+    { label: `What's in ${short(DEMO_ADDRESS)}?`, text: `What's in ${DEMO_ADDRESS}?` },
+    { label: "How's the INJ perp?", text: "How's the INJ perp?" },
+    { label: 'What governance proposals are live?', text: 'What governance proposals are live?' },
+  ];
+}
 
 export default function Home() {
   const [input, setInput] = useState('');
+  const [choosing, setChoosing] = useState(false);
+  const { address, available, connecting, error, connect, disconnect } = useWallet();
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({ api: '/api/chat' }),
   });
@@ -25,6 +48,19 @@ export default function Home() {
     if (!t || busy) return;
     sendMessage({ text: t });
     setInput('');
+  };
+
+  const onConnectClick = () => {
+    if (available.length === 1) {
+      connect(available[0]);
+      return;
+    }
+    setChoosing(true); // 0 → install note, 2 → chooser
+  };
+
+  const pickWallet = (p: WalletProvider) => {
+    setChoosing(false);
+    connect(p);
   };
 
   const textOf = (m: (typeof messages)[number]) =>
@@ -44,7 +80,42 @@ export default function Home() {
           <i />
         </span>
         <span className="title">talk-to-injective</span>
-        <span className="net">● mainnet</span>
+        <span className="right">
+          <span className="net">● mainnet</span>
+          {address ? (
+            <span className="wallet">
+              {short(address)}
+              <button className="x" onClick={disconnect} aria-label="Disconnect wallet">
+                ✕
+              </button>
+            </span>
+          ) : choosing ? (
+            available.length > 0 ? (
+              <span className="chooser">
+                {available.map((p) => (
+                  <button key={p} className="wbtn" onClick={() => pickWallet(p)}>
+                    {WALLET_LABEL[p]}
+                  </button>
+                ))}
+              </span>
+            ) : (
+              <span className="note">
+                No wallet found — install{' '}
+                <a href="https://www.keplr.app/" target="_blank" rel="noreferrer">
+                  Keplr
+                </a>{' '}
+                or{' '}
+                <a href="https://www.leapwallet.io/" target="_blank" rel="noreferrer">
+                  Leap
+                </a>
+              </span>
+            )
+          ) : (
+            <button className="connect" onClick={onConnectClick} disabled={connecting}>
+              {connecting ? 'Connecting…' : 'Connect'}
+            </button>
+          )}
+        </span>
       </div>
 
       <div className="scroll">
@@ -70,10 +141,12 @@ export default function Home() {
         )}
       </div>
 
+      {error && <div className="walleterr">{error}</div>}
+
       <div className="chips">
-        {SUGGESTIONS.map((s) => (
-          <button key={s} className="chip" onClick={() => send(s)} disabled={busy}>
-            › {s}
+        {suggestions(address).map((s) => (
+          <button key={s.label} className="chip" onClick={() => send(s.text)} disabled={busy}>
+            › {s.label}
           </button>
         ))}
       </div>
