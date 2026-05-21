@@ -76,6 +76,11 @@ export async function getMarketSnapshotData(query: string): Promise<MarketSnapsh
     fundingRate,
     openInterest,
     found: true,
+    // No open positions on a long-tail market means we can't derive a mark price.
+    // Flag it so the model doesn't report $0 as a real price.
+    ...(markPrice === 0 && {
+      message: 'Mark price is currently unavailable for this market.',
+    }),
   };
 }
 
