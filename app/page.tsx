@@ -2,7 +2,7 @@
 
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useWallet } from '@/lib/useWallet';
 import type { WalletProvider } from '@/lib/wallet';
 
@@ -13,6 +13,33 @@ const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
 // Render-only: shorten any inj1 address in displayed text. The model still receives
 // the full address (we only transform what's shown), so wallet lookups keep working.
 const shortenAddrs = (t: string) => t.replace(/inj1[0-9a-z]{38,}/g, short);
+
+// Render displayed text with shortened addresses and clickable links.
+const URL_RE = /https?:\/\/[^\s]+/g;
+function renderRich(text: string): ReactNode[] {
+  const s = shortenAddrs(text);
+  const out: ReactNode[] = [];
+  let last = 0;
+  let key = 0;
+  for (const m of s.matchAll(URL_RE)) {
+    const start = m.index;
+    let url = m[0];
+    // Keep trailing sentence punctuation out of the link itself.
+    const trail = url.match(/[.,!?;:)\]]+$/)?.[0] ?? '';
+    if (trail) url = url.slice(0, -trail.length);
+    if (start > last) out.push(s.slice(last, start));
+    out.push(
+      <a key={key++} href={url} target="_blank" rel="noreferrer" className="lnk">
+        {url}
+      </a>,
+    );
+    if (trail) out.push(trail);
+    last = start + m[0].length;
+  }
+  if (last < s.length) out.push(s.slice(last));
+  return out;
+}
+
 const WALLET_LABEL: Record<WalletProvider, string> = { keplr: 'Keplr', leap: 'Leap' };
 
 interface Suggestion {
@@ -149,7 +176,7 @@ export default function Home() {
                 {m.role === 'assistant' && usedTool(m) && !textOf(m) && (
                   <span className="reading">reading chain…</span>
                 )}
-                {shortenAddrs(textOf(m))}
+                {renderRich(textOf(m))}
               </div>
             ))}
 

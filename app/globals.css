@@ -66,6 +66,13 @@ body {
 .line.u { color: #6fe3ff; }
 .line.u::before { content: "› "; color: #36d6e7; font-weight: 700; }
 .line.b { color: #cdd6e2; }
+.line .lnk {
+  color: #36d6e7;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: #1d6e78;
+}
+.line .lnk:hover { color: #6ce6f5; text-decoration-color: #36d6e7; }
 .reading { color: #5e7390; font-style: italic; }
 
 .chips { display: flex; gap: 8px; flex-wrap: wrap; padding: 8px 16px; }
