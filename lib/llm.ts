@@ -1,9 +1,9 @@
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 
 // OpenRouter model slug. Swapping models = change this one line.
-// Alternatives: 'google/gemini-3-flash-preview' (exact "Gemini 3 Flash", preview),
-// 'google/gemini-2.5-flash', or 'anthropic/claude-haiku-4.5'.
-export const MODEL_SLUG = 'google/gemini-3.5-flash';
+// Alternatives: 'google/gemini-3.5-flash', 'google/gemini-2.5-flash',
+// or 'anthropic/claude-haiku-4.5'.
+export const MODEL_SLUG = 'google/gemini-3-flash-preview';
 
 const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY });
 export const model = openrouter(MODEL_SLUG);

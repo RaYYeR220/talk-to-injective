@@ -1,6 +1,6 @@
 # Injective Solo AI Builder Sprint
 
-**Status:** CONFIRMED concept (2026-05-20) — Tier-3 / opportunistic. Do only if slack before deadline; otherwise skip. Tech stack at Claude's discretion. Not started.
+**Status:** IN PROGRESS — near-complete (per user 2026-05-21). Keep & ship (deadline 2026-05-31). Tech stack at Claude's discretion.
 **Platform:** HackQuest (Injective / Ninja Labs)
 **URL:** https://www.hackquest.io/hackathons/Injective-Solo-AI-Builder-Sprint
 

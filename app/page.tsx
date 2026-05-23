@@ -2,7 +2,7 @@
 
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useWallet } from '@/lib/useWallet';
 import type { WalletProvider } from '@/lib/wallet';
 
@@ -71,6 +71,13 @@ export default function Home() {
 
   const busy = status === 'submitted' || status === 'streaming';
 
+  // Keep the latest message in view as it streams in.
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [messages, status]);
+
   const send = (text: string) => {
     const t = text.trim();
     if (!t || busy) return;
@@ -117,7 +124,7 @@ export default function Home() {
           <i />
           <i />
         </span>
-        <span className="title">talk-to-injective</span>
+        <span className="title">Talk to Injective</span>
         <span className="right">
           {address ? (
             <span className="wallet">
@@ -170,7 +177,7 @@ export default function Home() {
         </div>
       ) : (
         <>
-          <div className="scroll">
+          <div className="scroll" ref={scrollRef}>
             {messages.map((m) => (
               <div key={m.id} className={`line ${m.role === 'user' ? 'u' : 'b'}`}>
                 {m.role === 'assistant' && usedTool(m) && !textOf(m) && (

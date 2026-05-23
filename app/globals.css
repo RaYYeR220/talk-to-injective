@@ -34,11 +34,23 @@ body {
 .scroll {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  /* Big bottom gap so the newest message settles in the top ~70% and never
+     glues itself to the prompt bar after auto-scroll. Tune the 30vh to taste. */
+  padding: 16px 16px 30vh;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 26px;
+  scrollbar-width: thin;
+  scrollbar-color: #1d3a47 transparent;
 }
+.scroll::-webkit-scrollbar { width: 10px; }
+.scroll::-webkit-scrollbar-track { background: transparent; }
+.scroll::-webkit-scrollbar-thumb {
+  background: #182a36;
+  border-radius: 8px;
+  border: 2px solid #0a0e14;
+}
+.scroll::-webkit-scrollbar-thumb:hover { background: #244353; }
 .welcome {
   background: linear-gradient(180deg, #0e1622, #0a0e14);
   border: 1px solid #18242f;
@@ -63,7 +75,8 @@ body {
 .hero .chips { justify-content: center; padding: 0; }
 
 .line { white-space: pre-wrap; word-break: break-word; }
-.line.u { color: #6fe3ff; }
+.line.u { color: #6fe3ff; margin-top: 16px; }
+.line.u:first-child { margin-top: 0; }
 .line.u::before { content: "› "; color: #36d6e7; font-weight: 700; }
 .line.b { color: #cdd6e2; }
 .line .lnk {
