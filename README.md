@@ -13,7 +13,7 @@ opposite: you just chat, and it reads the chain and explains what's going on for
 newcomers.
 
 ## How AI is used
-A chat agent (Gemini 3.5 Flash via OpenRouter, wired with the Vercel AI SDK) turns
+A chat agent (Gemini 3 Flash via OpenRouter, wired with the Vercel AI SDK) turns
 plain questions into the right on-chain read, then explains the result for someone
 new to crypto. The model never invents numbers — every figure comes from a tool call,
 and the tools return structured data the model summarizes. It defines terms inline as
@@ -55,4 +55,4 @@ quick-action prompts at your own wallet — the app never requests a signature.
 that read Injective mainnet (network required; no key needed for those).
 
 ## Stack
-Next.js (App Router), Vercel AI SDK, OpenRouter (Gemini 3.5 Flash), `@injectivelabs/sdk-ts`.
+Next.js (App Router), Vercel AI SDK, OpenRouter (Gemini 3 Flash), `@injectivelabs/sdk-ts`.
