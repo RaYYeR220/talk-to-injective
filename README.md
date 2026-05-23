@@ -1,5 +1,7 @@
 # Talk to Injective
 
+**[Live demo →](https://talk-to-injective.vercel.app)**
+
 A friendly AI chat that explains Injective in plain English using **live mainnet
 on-chain data** — wallets, markets, governance, and staking. Read-only: no trading,
 no signing, no private keys.
@@ -56,3 +58,6 @@ that read Injective mainnet (network required; no key needed for those).
 
 ## Stack
 Next.js (App Router), Vercel AI SDK, OpenRouter (Gemini 3 Flash), `@injectivelabs/sdk-ts`.
+
+## License
+MIT — see [LICENSE](LICENSE).
